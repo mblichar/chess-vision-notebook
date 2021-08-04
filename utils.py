@@ -19,22 +19,34 @@ def process_hough_lines(lines):
     return list(map(lambda l: Line(l[0][0], l[0][1]), lines))
 
 
-def group_lines(lines: List[Line], rho_threshold, theta_threshold):
-    grouped_lines = []
+def merge_lines(lines: List[Line], rho_threshold, theta_threshold):
+    merged_lines = []
     for line in lines:
         found = False
         rho = line.rho
         theta = line.theta
 
-        for idx, grouped_line in enumerate(grouped_lines):
+        for idx, grouped_line in enumerate(merged_lines):
             if abs(grouped_line.rho - rho) < rho_threshold and abs(grouped_line.theta - theta) < theta_threshold:
-                grouped_lines[idx] = Line((grouped_line.rho + rho) / 2, (grouped_line.theta + theta) / 2)
+                merged_lines[idx] = Line((grouped_line.rho + rho) / 2, (grouped_line.theta + theta) / 2)
                 found = True
                 break
         if not found:
-            grouped_lines.append(Line(rho, theta))
+            merged_lines.append(Line(rho, theta))
 
-    return grouped_lines
+    return merged_lines
+
+
+def lines_intersection_point(a: Line, b: Line):
+    sin_theta_a = math.sin(a.theta)
+    sin_theta_b = math.sin(b.theta)
+    cos_theta_a = math.cos(a.theta)
+    cos_theta_b = math.cos(b.theta)
+
+    x = (b.rho * sin_theta_a - a.rho * sin_theta_b) / (cos_theta_b * sin_theta_a - cos_theta_a * sin_theta_b)
+    y = (a.rho - x * cos_theta_a) / sin_theta_a
+
+    return x, y
 
 
 def invert(point):
